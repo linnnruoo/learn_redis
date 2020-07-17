@@ -153,44 +153,48 @@ test(`${testSuiteName}: findById with missing site`, async () => {
 });
 
 // This test is for Challenge #1.
-test.skip(`${testSuiteName}: findAll with multiple sites`, async () => {
-  const sites = [{
-    id: 1,
-    capacity: 4.5,
-    panels: 3,
-    address: '123 Willow St.',
-    city: 'Oakland',
-    state: 'CA',
-    postalCode: '94577',
-    coordinate: {
-      lat: 37.739659,
-      lng: -122.255689,
+test(`${testSuiteName}: findAll with multiple sites`, async () => {
+  const sites = [
+    {
+      id: 1,
+      capacity: 4.5,
+      panels: 3,
+      address: '123 Willow St.',
+      city: 'Oakland',
+      state: 'CA',
+      postalCode: '94577',
+      coordinate: {
+        lat: 37.739659,
+        lng: -122.255689,
+      },
     },
-  }, {
-    id: 2,
-    capacity: 3.0,
-    panels: 2,
-    address: '456 Maple St.',
-    city: 'Oakland',
-    state: 'CA',
-    postalCode: '94577',
-    coordinate: {
-      lat: 37.739559,
-      lng: -122.256689,
+    {
+      id: 2,
+      capacity: 3.0,
+      panels: 2,
+      address: '456 Maple St.',
+      city: 'Oakland',
+      state: 'CA',
+      postalCode: '94577',
+      coordinate: {
+        lat: 37.739559,
+        lng: -122.256689,
+      },
     },
-  }, {
-    id: 3,
-    capacity: 4.0,
-    panels: 3,
-    address: '789 Oak St.',
-    city: 'Oakland',
-    state: 'CA',
-    postalCode: '94577',
-    coordinate: {
-      lat: 37.739659,
-      lng: -122.255689,
+    {
+      id: 3,
+      capacity: 4.0,
+      panels: 3,
+      address: '789 Oak St.',
+      city: 'Oakland',
+      state: 'CA',
+      postalCode: '94577',
+      coordinate: {
+        lat: 37.739659,
+        lng: -122.255689,
+      },
     },
-  }];
+  ];
 
   /* eslint-disable no-await-in-loop */
 
@@ -206,7 +210,7 @@ test.skip(`${testSuiteName}: findAll with multiple sites`, async () => {
 });
 
 // This test is for Challenge #1.
-test.skip(`${testSuiteName}: findAll with empty sites`, async () => {
+test.only(`${testSuiteName}: findAll with empty sites`, async () => {
   const sites = await redisSiteDAO.findAll();
   expect(sites).toEqual([]);
 });
