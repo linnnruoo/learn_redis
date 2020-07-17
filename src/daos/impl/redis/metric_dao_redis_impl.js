@@ -59,6 +59,8 @@ const insertMetric = async (siteId, metricValue, metricName, timestamp) => {
   const minuteOfDay = timeUtils.getMinuteOfDay(timestamp);
 
   // START Challenge #2
+  const measurementMinute = formatMeasurementMinute(metricValue, minuteOfDay);
+  await client.zaddAsync(metricKey, minuteOfDay, measurementMinute);
   // END Challenge #2
 };
 /* eslint-enable */
@@ -125,7 +127,7 @@ const insert = async (meterReading) => {
  * @returns {Promise} - Promise resolving to an array of measurement objects.
  */
 const getRecent = async (siteId, metricUnit, timestamp, limit) => {
-  if (limit > (metricsPerDay * maxMetricRetentionDays)) {
+  if (limit > metricsPerDay * maxMetricRetentionDays) {
     const err = new Error(`Cannot request more than ${maxMetricRetentionDays} days of minute level data.`);
     err.name = 'TooManyMetricsError';
 
@@ -139,12 +141,7 @@ const getRecent = async (siteId, metricUnit, timestamp, limit) => {
 
   do {
     /* eslint-disable no-await-in-loop */
-    const dateMeasurements = await getMeasurementsForDate(
-      siteId,
-      metricUnit,
-      currentTimestamp,
-      count,
-    );
+    const dateMeasurements = await getMeasurementsForDate(siteId, metricUnit, currentTimestamp, count);
     /* eslint-enable */
 
     measurements.unshift(...dateMeasurements);
