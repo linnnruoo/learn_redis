@@ -99,11 +99,14 @@ const findAll = async () => {
   // START CHALLENGE #1
   const client = redis.getClient();
 
-  const siteIdsKey = keyGenerator.getSiteIDsKey(); // key name for IDs
-  const siteHashKeys = await client.smembersAsync(siteIdsKey); // get all the members (values) of the IDs key
+  // key name for IDs
+  const siteIdsKey = keyGenerator.getSiteIDsKey();
+  // get all the members (values) of the IDs key
+  const siteHashKeys = await client.smembersAsync(siteIdsKey);
 
   const siteHashes = await Promise.all(
-    siteHashKeys.map((key) => client.hgetallAsync(key)), // get all the fields associated with one of the member
+    // get all the fields associated with one of the member
+    siteHashKeys.map((key) => client.hgetallAsync(key)),
   );
   const sites = siteHashes.map((siteHash) => remap(siteHash));
   return sites;
