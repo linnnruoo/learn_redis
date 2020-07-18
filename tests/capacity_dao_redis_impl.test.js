@@ -82,8 +82,8 @@ test(`${testSuiteName}: getReport`, async () => {
   ];
 
   await Promise.all(
-    entries.map(
-      site => client.zaddAsync(
+    entries.map((site) =>
+      client.zaddAsync(
         keyGenerator.getCapacityRankingKey(),
         site.score,
         site.id,
@@ -118,7 +118,7 @@ test(`${testSuiteName}: getReport`, async () => {
 });
 
 // This test is for Challenge #4.
-test.skip(`${testSuiteName}: getRank`, async () => {
+test(`${testSuiteName}: getRank`, async () => {
   // Create some data
   const entries = [
     {
@@ -144,8 +144,8 @@ test.skip(`${testSuiteName}: getRank`, async () => {
   ];
 
   await Promise.all(
-    entries.map(
-      site => client.zaddAsync(
+    entries.map((site) =>
+      client.zaddAsync(
         keyGenerator.getCapacityRankingKey(),
         site.score,
         site.id,
