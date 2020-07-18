@@ -22,6 +22,7 @@ const remap = (siteHash) => {
   // coordinate is optional.
   if (siteHash.hasOwnProperty('lat') && siteHash.hasOwnProperty('lng')) {
     remappedSiteHash.coordinate = {
+      // reversing
       lat: parseFloat(siteHash.lat),
       lng: parseFloat(siteHash.lng),
     };
@@ -84,8 +85,8 @@ const findById = async (id) => {
   const siteKey = keyGenerator.getSiteHashKey(id);
 
   const siteHash = await client.hgetallAsync(siteKey);
-
-  return (siteHash === null ? siteHash : remap(siteHash));
+  // null for missing site
+  return siteHash === null ? siteHash : remap(siteHash);
 };
 
 /* eslint-disable arrow-body-style */
@@ -96,7 +97,19 @@ const findById = async (id) => {
  */
 const findAll = async () => {
   // START CHALLENGE #1
-  return [];
+  const client = redis.getClient();
+
+  // key name for IDs
+  const siteIdsKey = keyGenerator.getSiteIDsKey();
+  // get all the members (values) of the IDs key
+  const siteHashKeys = await client.smembersAsync(siteIdsKey);
+
+  const siteHashes = await Promise.all(
+    // get all the fields associated with one of the member
+    siteHashKeys.map((key) => client.hgetallAsync(key)),
+  );
+  const sites = siteHashes.map((siteHash) => remap(siteHash));
+  return sites;
   // END CHALLENGE #1
 };
 /* eslint-enable */
