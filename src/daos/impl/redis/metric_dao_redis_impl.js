@@ -23,7 +23,8 @@ const daySeconds = 24 * 60 * 60;
  * @returns {string} - String containing <measurement>-<minuteOfDay>.
  * @private
  */
-const formatMeasurementMinute = (measurement, minuteOfDay) => `${roundTo(measurement, 2)}:${minuteOfDay}`;
+const formatMeasurementMinute = (measurement, minuteOfDay) =>
+  `${roundTo(measurement, 2)}:${minuteOfDay}`;
 /* eslint-enable */
 
 /**
@@ -61,6 +62,7 @@ const insertMetric = async (siteId, metricValue, metricName, timestamp) => {
   // START Challenge #2
   const measurementMinute = formatMeasurementMinute(metricValue, minuteOfDay);
   await client.zaddAsync(metricKey, minuteOfDay, measurementMinute);
+  await client.expireAsync(metricKey, metricExpirationSeconds);
   // END Challenge #2
 };
 /* eslint-enable */
@@ -110,9 +112,24 @@ const getMeasurementsForDate = async (siteId, metricUnit, timestamp, limit) => {
  */
 const insert = async (meterReading) => {
   await Promise.all([
-    insertMetric(meterReading.siteId, meterReading.whGenerated, 'whGenerated', meterReading.dateTime),
-    insertMetric(meterReading.siteId, meterReading.whUsed, 'whUsed', meterReading.dateTime),
-    insertMetric(meterReading.siteId, meterReading.tempC, 'tempC', meterReading.dateTime),
+    insertMetric(
+      meterReading.siteId,
+      meterReading.whGenerated,
+      'whGenerated',
+      meterReading.dateTime,
+    ),
+    insertMetric(
+      meterReading.siteId,
+      meterReading.whUsed,
+      'whUsed',
+      meterReading.dateTime,
+    ),
+    insertMetric(
+      meterReading.siteId,
+      meterReading.tempC,
+      'tempC',
+      meterReading.dateTime,
+    ),
   ]);
 };
 
@@ -128,7 +145,9 @@ const insert = async (meterReading) => {
  */
 const getRecent = async (siteId, metricUnit, timestamp, limit) => {
   if (limit > metricsPerDay * maxMetricRetentionDays) {
-    const err = new Error(`Cannot request more than ${maxMetricRetentionDays} days of minute level data.`);
+    const err = new Error(
+      `Cannot request more than ${maxMetricRetentionDays} days of minute level data.`,
+    );
     err.name = 'TooManyMetricsError';
 
     throw err;
@@ -141,7 +160,12 @@ const getRecent = async (siteId, metricUnit, timestamp, limit) => {
 
   do {
     /* eslint-disable no-await-in-loop */
-    const dateMeasurements = await getMeasurementsForDate(siteId, metricUnit, currentTimestamp, count);
+    const dateMeasurements = await getMeasurementsForDate(
+      siteId,
+      metricUnit,
+      currentTimestamp,
+      count,
+    );
     /* eslint-enable */
 
     measurements.unshift(...dateMeasurements);
