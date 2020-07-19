@@ -9,9 +9,34 @@ const timeUtils = require('../../../utils/time_utils');
 // Challenge 7
 const hitSlidingWindow = async (name, opts) => {
   const client = redis.getClient();
+  const key = keyGenerator.getSlidingWindowRateLimiterKey(
+    opts.interval,
+    name,
+    opts.maxHits,
+  );
 
   // START Challenge #7
-  return -2;
+  const transaction = client.multi();
+
+  const currTimeInMillis = timeUtils.getCurrentTimestampMillis();
+  transaction.zadd(
+    key,
+    currTimeInMillis,
+    `${currTimeInMillis}-${Math.random()}`,
+  );
+  transaction.zremrangebyscore(
+    key,
+    '-inf',
+    `(${currTimeInMillis - opts.interval}`,
+  );
+  transaction.zcard(key);
+
+  const res = await transaction.execAsync();
+  const hits = parseInt(res[2], 10);
+
+  const hitsRemaining = hits > opts.maxHits ? -1 : opts.maxHits - hits;
+
+  return hitsRemaining;
   // END Challenge #7
 };
 

@@ -15,7 +15,7 @@ let prefix = config.get('dataStores.redis.keyPrefix');
  *  the value of 'key'
  * @private
  */
-const getKey = key => `${prefix}:${key}`;
+const getKey = (key) => `${prefix}:${key}`;
 
 /**
  * Generates a temporary unique key name using a the short string
@@ -37,7 +37,7 @@ const getTemporaryKey = () => getKey(`tmp:${shortId.generate()}`);
  * @param {number} siteId - the numeric ID of a site.
  * @returns - the site information key for the provided site ID.
  */
-const getSiteHashKey = siteId => getKey(`sites:info:${siteId}`);
+const getSiteHashKey = (siteId) => getKey(`sites:info:${siteId}`);
 
 /**
  * Returns the Redis key name used for the set storing all site IDs.
@@ -62,7 +62,8 @@ const getSiteIDsKey = () => getKey('sites:ids');
  * @returns {string} - the Redis key used to store site stats for that site on the
  *  day represented by the timestamp.
  */
-const getSiteStatsKey = (siteId, timestamp) => getKey(`sites:stats:${timeUtils.getDateString(timestamp)}:${siteId}`);
+const getSiteStatsKey = (siteId, timestamp) =>
+  getKey(`sites:stats:${timeUtils.getDateString(timestamp)}:${siteId}`);
 
 /**
  * Takes a name, interval and maximum number of hits allowed in that interval,
@@ -80,9 +81,26 @@ const getSiteStatsKey = (siteId, timestamp) => getKey(`sites:stats:${timeUtils.g
  */
 const getRateLimiterKey = (name, interval, maxHits) => {
   const minuteOfDay = timeUtils.getMinuteOfDay();
-  return getKey(`limiter:${name}:${Math.floor(minuteOfDay / interval)}:${maxHits}`);
+  return getKey(
+    `limiter:${name}:${Math.floor(minuteOfDay / interval)}:${maxHits}`,
+  );
 };
 
+/**
+ * Key name: prefix:limiter:[windowSize]:[name]:[maxHits]
+ * Redis type stored at this key: string
+ *
+ * @param {number} windowSize - the number of milliseconds in a window
+ * aka interval (?) in milliseconds
+ * @param {string} name - the unique name of the resource.
+ * @param {number} maxHits - the maximum number of hits on the resource
+ *  allowed in the interval.
+ * @returns {string} - the Redis key used to store the rate limiter data for the
+ *  given parameters.
+ */
+const getSlidingWindowRateLimiterKey = (windowSize, name, maxHits) => {
+  return getKey(`limiter:${windowSize}:${name}:${maxHits}`);
+};
 /**
  * Returns the Redis key used to store geo information for sites.
  *
@@ -131,9 +149,8 @@ const getTSKey = (siteId, unit) => getKey(`sites:ts:${siteId}:${unit}`);
  * @returns {string} - the Redis key used to store metrics for the specified metric
  *  on the specified day for the specified site ID.
  */
-const getDayMetricKey = (siteId, unit, timestamp) => getKey(
-  `metric:${unit}:${timeUtils.getDateString(timestamp)}:${siteId}`,
-);
+const getDayMetricKey = (siteId, unit, timestamp) =>
+  getKey(`metric:${unit}:${timeUtils.getDateString(timestamp)}:${siteId}`);
 
 /**
  * Returns the name of the Redis key used to store the global sites data feed.
@@ -156,7 +173,7 @@ const getGlobalFeedKey = () => getKey('sites:feed');
  * @returns {string} - the Redis key used to store the data feed for the
  *  site represented by 'siteId'.
  */
-const getFeedKey = siteId => getKey(`sites:feed:${siteId}`);
+const getFeedKey = (siteId) => getKey(`sites:feed:${siteId}`);
 
 /**
  * Set the global key prefix, overriding the one set in config.json.
@@ -176,6 +193,7 @@ module.exports = {
   getSiteIDsKey,
   getSiteStatsKey,
   getRateLimiterKey,
+  getSlidingWindowRateLimiterKey,
   getSiteGeoKey,
   getCapacityRankingKey,
   getTSKey,
