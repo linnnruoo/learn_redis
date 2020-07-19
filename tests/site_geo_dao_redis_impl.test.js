@@ -114,43 +114,47 @@ test(`${testSuiteName}: findById with missing site`, async () => {
 });
 
 test(`${testSuiteName}: findAll with multiple sites`, async () => {
-  const sites = [{
-    id: 1,
-    capacity: 4.5,
-    panels: 3,
-    address: '123 Willow St.',
-    city: 'Oakland',
-    state: 'CA',
-    postalCode: '94577',
-    coordinate: {
-      lat: 37.739659,
-      lng: -122.255689,
+  const sites = [
+    {
+      id: 1,
+      capacity: 4.5,
+      panels: 3,
+      address: '123 Willow St.',
+      city: 'Oakland',
+      state: 'CA',
+      postalCode: '94577',
+      coordinate: {
+        lat: 37.739659,
+        lng: -122.255689,
+      },
     },
-  }, {
-    id: 2,
-    capacity: 3.0,
-    panels: 2,
-    address: '456 Maple St.',
-    city: 'Oakland',
-    state: 'CA',
-    postalCode: '94577',
-    coordinate: {
-      lat: 37.739559,
-      lng: -122.256689,
+    {
+      id: 2,
+      capacity: 3.0,
+      panels: 2,
+      address: '456 Maple St.',
+      city: 'Oakland',
+      state: 'CA',
+      postalCode: '94577',
+      coordinate: {
+        lat: 37.739559,
+        lng: -122.256689,
+      },
     },
-  }, {
-    id: 3,
-    capacity: 4.0,
-    panels: 3,
-    address: '789 Oak St.',
-    city: 'Oakland',
-    state: 'CA',
-    postalCode: '94577',
-    coordinate: {
-      lat: 37.739659,
-      lng: -122.255689,
+    {
+      id: 3,
+      capacity: 4.0,
+      panels: 3,
+      address: '789 Oak St.',
+      city: 'Oakland',
+      state: 'CA',
+      postalCode: '94577',
+      coordinate: {
+        lat: 37.739659,
+        lng: -122.255689,
+      },
     },
-  }];
+  ];
 
   /* eslint-disable no-await-in-loop */
 
@@ -230,12 +234,12 @@ test(`${testSuiteName}: findByGeo with results`, async () => {
   expect(response[0].id).toBe(site1.id);
 
   // Find Union City sites, expect 1.
-  response = await redisSiteDAO.findByGeo(37.596323, -122.081630, 10, 'km');
+  response = await redisSiteDAO.findByGeo(37.596323, -122.08163, 10, 'km');
   expect(response.length).toBe(1);
   expect(response[0].id).toBe(site2.id);
 
   // Larger Radius should return all 3 sites.
-  response = await redisSiteDAO.findByGeo(37.596323, -122.081630, 60, 'km');
+  response = await redisSiteDAO.findByGeo(37.596323, -122.08163, 60, 'km');
   expect(response.length).toBe(3);
   expect(response[0].id).toBe(site2.id);
   expect(response[1].id).toBe(site3.id);
@@ -272,7 +276,7 @@ test(`${testSuiteName}: findByGeo no results`, async () => {
 });
 
 // This test is for Challenge #5.
-test.skip(`${testSuiteName}: findByGeoWithExcessCapacity`, async () => {
+test(`${testSuiteName}: findByGeoWithExcessCapacity`, async () => {
   const site1 = {
     id: 1,
     capacity: 4.5,
@@ -302,10 +306,7 @@ test.skip(`${testSuiteName}: findByGeoWithExcessCapacity`, async () => {
   };
 
   // Add sites.
-  await Promise.all([
-    redisSiteDAO.insert(site1),
-    redisSiteDAO.insert(site2),
-  ]);
+  await Promise.all([redisSiteDAO.insert(site1), redisSiteDAO.insert(site2)]);
 
   // Should find site1 and site2.
   let response = await redisSiteDAO.findByGeo(

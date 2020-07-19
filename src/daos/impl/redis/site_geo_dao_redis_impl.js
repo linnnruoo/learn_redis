@@ -100,7 +100,7 @@ const findById = async (id) => {
 
   const siteHash = await client.hgetallAsync(siteKey);
 
-  return (siteHash === null ? siteHash : remap(siteHash));
+  return siteHash === null ? siteHash : remap(siteHash);
 };
 
 /**
@@ -112,21 +112,17 @@ const findAll = async () => {
   const client = redis.getClient();
 
   const siteIds = await client.zrangeAsync(keyGenerator.getSiteGeoKey(), 0, -1);
-  const sites = [];
 
+  const pipeline = client.batch();
   for (const siteId of siteIds) {
     const siteKey = keyGenerator.getSiteHashKey(siteId);
 
     /* eslint-disable no-await-in-loop */
-    const siteHash = await client.hgetallAsync(siteKey);
+    pipeline.hgetall(siteKey);
     /* eslint-enable */
-
-    if (siteHash) {
-      // Call remap to remap the flat key/value representation
-      // from the Redis hash into the site domain object format.
-      sites.push(remap(siteHash));
-    }
   }
+  const siteHashes = await pipeline.execAsync();
+  const sites = siteHashes.map((siteHash) => remap(siteHash));
 
   return sites;
 };
@@ -180,7 +176,6 @@ const findByGeo = async (lat, lng, radius, radiusUnit) => {
 const findByGeoWithExcessCapacity = async (lat, lng, radius, radiusUnit) => {
   /* eslint-disable no-unreachable */
   // Challenge #5, remove the next line...
-  return [];
 
   const client = redis.getClient();
 
@@ -205,6 +200,15 @@ const findByGeoWithExcessCapacity = async (lat, lng, radius, radiusUnit) => {
   const sitesInRadiusCapacitySortedSetKey = keyGenerator.getTemporaryKey();
 
   // START Challenge #5
+  setOperationsPipeline.zinterstore(
+    sitesInRadiusCapacitySortedSetKey,
+    2,
+    sitesInRadiusSortedSetKey,
+    keyGenerator.getCapacityRankingKey(),
+    'WEIGHTS',
+    0,
+    1,
+  );
   // END Challenge #5
 
   // Expire the temporary sorted sets after 30 seconds, so that we
